@@ -5,9 +5,10 @@ using namespace std;
 
 int main(void){
     MinMax m;
-    k.a=4;
-    k.b=3;
-    cout<<k.a<<"+"<<k.b<<"="<<k.add()<<endl;
-    cout<<k.a<<"-"<<k.b<<"="<<k.sub()<<endl;
+    int a=4;
+    int b=2;
+    int c=7;
+    cout << a << "と" << b << "のうち、最大のものは" << m.max(a,b) << endl;
+    cout << a << "と" << b << "のうち、最小のものは" << m.min(a,b) << endl;
     return 0;
 }

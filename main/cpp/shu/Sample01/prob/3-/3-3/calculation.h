@@ -5,3 +5,7 @@
 
 using namespace std;
 
+class Calculation{
+    private:
+        
+}

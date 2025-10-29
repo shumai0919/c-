@@ -10,8 +10,8 @@ class Calculation{
         int m_number1;
         int m_number2;
     public:
-        void setNumber1();
-        void setNumber2();
+        void setNumber1(int n);
+        void setNumber2(int n);
         int getNumber1();
         int getNumber2();
         int add();

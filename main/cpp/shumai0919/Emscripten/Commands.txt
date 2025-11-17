@@ -1,0 +1,29 @@
+-------------------取得-------------------
+
+# Emscripten SDK を取得
+git clone https://github.com/emscripten-core/emsdk.git
+cd emsdk
+
+# 最新版をインストール
+./emsdk install latest
+
+# 最新版を有効化
+./emsdk activate latest
+
+# 環境を反映
+source ./emsdk_env.sh
+
+------------------------------------------
+
+・バージョン
+emcc --version
+
+○コンパイル
+emcc "ファイル名".cpp -o ファイル名.html
+
+○ブラウザで実行
+emrun --no_browser --port 8080 .
+
+
+○コンパイル（グラフィック）
+emcc "ファイル名".cpp -s USE_SDL=2 -o "ファイル名".html

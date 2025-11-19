@@ -2,6 +2,7 @@
 
 cat << 'EOF' >> ~/.bashrc
 
+
 # === Universal Language Compiler Shortcuts ===
 compile_source() {
     local compiler="$1"
@@ -48,6 +49,10 @@ compile_source() {
             echo "✅ Running Go build: $src_path"
             go run "$src_path"
             ;;
+        pyr)
+            echo "✅ Running Python: $src_path"
+            python3 "$src_path"
+            ;;
         *)
             echo "❌ Unknown compiler: $compiler"
             ;;
@@ -59,6 +64,7 @@ cr()    { compile_source cr "$1" c; }
 javar() { compile_source javar "$1" java; }
 jsr()   { compile_source jsr "$1" js; }
 gor()   { compile_source gor "$1" go; }
+pyr()   { compile_source pyr "$1" py; }
 
 # === End Compiler Shortcuts ===
 
@@ -67,4 +73,4 @@ EOF
 # ✅ 追記後すぐに反映
 source ~/.bashrc
 
-echo "✅ Setup complete! Commands available: cppr, cr, javar, jsr, gor"
+echo "✅ Setup complete! Commands available: cppr, cr, javar, jsr, gor, pyr"

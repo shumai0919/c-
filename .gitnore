@@ -1,4 +1,7 @@
-.vscodeb/
+.vscode/
 .emsdk/
 .setup
-.setupn
+
+*.o
+*.out
+*.exe

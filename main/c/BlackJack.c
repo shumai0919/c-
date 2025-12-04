@@ -4,8 +4,16 @@
 #include <time.h>
 #include <unistd.h>
 #include <string.h>
-#define WAR_FUND 300000
-#define DEBUGMODE 0
+#define WAR_FUND 300000 //最初の所持金
+#define DEBUGMODE 1     //0で通常開始
+
+struct stat{
+    int betTtl;
+    int returnamountTtl;
+    int losingamountTtl;
+    int winsTtl;
+    int lossTtl;
+};
 
 void showPossessionCards(int *possession){
     int length = sizeof(possession) / sizeof(int);
@@ -17,7 +25,7 @@ void showPossessionCards(int *possession){
 char getCardMark(int card){
     int num_mark;
     char mark;
-    num_mark = card / 13;
+    num_mark = (card - 1) / 13;
     if(num_mark == 0){
         mark = 'S';
     }else if(num_mark == 1){
@@ -47,10 +55,12 @@ int getCardNum(int card){
 }
 
 int main(void){
-    int player_scoretotal = 0,dealer_scoretotal = 0,hit_count = 0,betamount = 0,return_amount = 0,player_money = WAR_FUND,player_cardhand,score_drawingcard,num_selection,ace_selection,debugMode = DEBUGMODE;
+    struct stat stat_t = {0,0,0,0,0};
+    int player_scoretotal = 0,dealer_scoretotal = 0,hit_count = 0,betamount = 0,return_amount = 0,player_money = WAR_FUND;
+    int player_cardhand,num_selection,ace_selection,debugMode = DEBUGMODE;
     float return_amount_magnifi;
     char win_or_loss = 'n',str_selection = 'h',cardMark;
-    int player_owncard[12] = {-1},dealer_owncard[12] = {-1},cardstorage_shdc[52] = {-1};
+    int player_owncard[12],dealer_owncard[12],cardstorage_shdc[52];
     srand((unsigned)time(NULL));
 
     while(1){
@@ -63,8 +73,8 @@ int main(void){
             HS_employCard[k] = -1;
         }
 
-        //最初に2枚引くカード(0~51)を指定できる（DEBUGMODEが1のとき）
-        first_employCard[0] = 0;first_employCard[1] = 10;
+        //最初に2枚引くカード(カード番号-1)を指定できる（DEBUGMODEが1のとき）
+        first_employCard[0] = 0;first_employCard[1] = 13;
 
         //hit,standで引くカード
         HS_employCard[0] = 0+26;HS_employCard[1] = 0+39;
@@ -108,6 +118,7 @@ int main(void){
                 return_amount = betamount;
                 player_money -= betamount;
                 bet_entry = 1;
+                stat_t.betTtl += betamount;
                 printf("所持金：$%d\n",player_money);
             }
         }while(bet_entry == 0);
@@ -145,16 +156,18 @@ int main(void){
                             printf(" > ");
                             scanf("%d",&ace_selection);
                         }while(ace_selection != 1 && ace_selection != 2);
-                        if(ace_selection == 1)
-                            {player_scoretotal += 1;
-                            }else{player_scoretotal += 11;}
+                        if(ace_selection == 1){
+                            player_scoretotal += 1;
+                        }else{
+                            player_scoretotal += 11;
+                        }
                     }else if(getCardNum(cardstorage_shdc[rand1]) >= 11 && getCardNum(cardstorage_shdc[rand1]) <= 13){
                         player_scoretotal += 10;
                     }else{
                         player_scoretotal += getCardNum(cardstorage_shdc[rand1]);
                     }
                     cardstorage_shdc[rand1] = -1;
-                    if(player_scoretotal == 21 && (getCardNum(player_owncard[0]) == 1 && getCardNum(player_owncard[1]) >=10) || (getCardNum(player_owncard[0]) >=10 && getCardNum(player_owncard[1]) == 1)){
+                    if(player_scoretotal == 21 && ((getCardNum(player_owncard[0]) == 1 && getCardNum(player_owncard[1]) >=10) || (getCardNum(player_owncard[0]) >=10 && getCardNum(player_owncard[1]) == 1))){
                         win_or_loss = 'w';
                     }
                 }else{
@@ -174,7 +187,7 @@ int main(void){
         if(win_or_loss == 'n'){
             printf("プレイヤーの手札: %c%d, ",getCardMark(player_owncard[0]),getCardNum(player_owncard[0]));
             printf("%c%d (合計: %d)\n ",getCardMark(player_owncard[1]),getCardNum(player_owncard[1]),player_scoretotal);
-            printf("ディーラーの手札: %c%d, ? (合計: ?)\n",getCardMark(player_owncard[0]),getCardNum(dealer_owncard[0]));
+            printf("ディーラーの手札: %c%d, ? (合計: ?)\n",getCardMark(dealer_owncard[0]),getCardNum(dealer_owncard[0]));
             printf("\n");
             hit_count = 0;
             printf("- プレイヤーのターン -\n");
@@ -246,7 +259,7 @@ int main(void){
             if(win_or_loss == 'l' || win_or_loss == 'w'){break;}
             do{
                 rand1 = rand() % 52;
-            }while(cardstorage_shdc[rand1] == 0);
+            }while(cardstorage_shdc[rand1] == -1);
             dealer_owncard[2 + hit_count] = cardstorage_shdc[rand1];
             if(getCardNum(cardstorage_shdc[rand1]) == 1 && dealer_scoretotal+10 <= 21){
                 dealer_scoretotal += 11;
@@ -356,8 +369,13 @@ int main(void){
                 return_amount_magnifi = 1;
                 break;
             }
+            default:{
+                return_amount_magnifi = 1;
+                break;
+            }
         }
         return_amount = return_amount * return_amount_magnifi;
+        stat_t.returnamountTtl += return_amount;
         usleep(1000000);
 
         printf("プレイヤーの手札: ");
@@ -402,6 +420,7 @@ int main(void){
         }else if(win_or_loss == 'd'){
             printf("配当額: +$0\n");
             printf("所持金:  $%d\n",player_money + return_amount);
+            stat_t.losingamountTtl += betamount;
         }
         player_money += return_amount;
         usleep(2000000);
@@ -413,8 +432,13 @@ int main(void){
         scanf("%d",&num_selection);
         if(num_selection == 1){
             printf("/n");
+            printf("------統計------\n");
+            printf("所持金：%d\n",player_money);
+            printf("賭けた額：%d\n",stat_t.betTtl);
+            printf("負けた額：%d\n",stat_t.losingamountTtl);
             exit(0);
         }
+        system("clear");
         printf("\n");
     }
     return 0;

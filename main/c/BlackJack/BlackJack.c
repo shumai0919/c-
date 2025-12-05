@@ -3,9 +3,9 @@
 #include <math.h>
 #include <time.h>
 #include <unistd.h>
-#include <string.h>
+#include "BGtext.h"
 #define WAR_FUND 300000 //最初の所持金
-#define DEBUGMODE 1     //0で通常開始
+#define DEBUGMODE 0     //0で通常開始
 
 struct stat{
     int betTtl;
@@ -22,6 +22,10 @@ void showPossessionCards(int *possession){
     }
 }
 
+void showEltm(const char *msg){
+    printf("%s", msg);
+}
+
 char getCardMark(int card){
     int num_mark;
     char mark;
@@ -36,15 +40,6 @@ char getCardMark(int card){
         mark = 'C';
     }
     return mark;
-}
-
-int contains(int arr[],int size,int target){
-    for(int i = 0; i < size; i++){
-        if(arr[i] == target){
-            return 1;
-        }
-    }
-    return 0;
 }
 
 int getCardNum(int card){
@@ -74,7 +69,7 @@ int main(void){
         }
 
         //最初に2枚引くカード(カード番号-1)を指定できる（DEBUGMODEが1のとき）
-        first_employCard[0] = 0;first_employCard[1] = 13;
+        first_employCard[0] = 0;first_employCard[1] = 0+13;
 
         //hit,standで引くカード
         HS_employCard[0] = 0+26;HS_employCard[1] = 0+39;
@@ -96,11 +91,23 @@ int main(void){
         hit_count = 0;
 
         if(player_money < 100){
-            printf("$100以上でゲームプレイ可能です\n");
-            usleep(1000000);
+            printf("\nお金が無くなった!\n");
+            usleep(3000000);
             system("clear");
-            printf("\n\n\n    YOU DIED\n\n\n");
-            usleep(2000000);
+            printf("\n");
+            showEltm(messages1[0]);
+            printf("\n");
+            usleep(3000000);
+            showEltm(messages2[0]);
+            printf("\n");
+            usleep(3000000);
+            showEltm(messages3[0]);
+            printf("\n");
+            usleep(3500000);
+            system("clear");
+            showEltm(messages4[0]);
+            printf("\n");
+            usleep(5000000);
             system("clear");
             exit(0);
         }
@@ -154,9 +161,13 @@ int main(void){
                                 printf("(1枚目: %d)",getCardNum(player_owncard[0]));
                             }
                             printf(" > ");
+                            if(player_scoretotal + 11 > 21){
+                                printf("21を超えるため自動的に'1'としてカウントします\n");
+                                break;
+                            }
                             scanf("%d",&ace_selection);
                         }while(ace_selection != 1 && ace_selection != 2);
-                        if(ace_selection == 1){
+                        if(ace_selection == 1 || player_scoretotal + 11 > 21){
                             player_scoretotal += 1;
                         }else{
                             player_scoretotal += 11;
@@ -292,18 +303,20 @@ int main(void){
                 win_or_loss = 'd';
             }
         }
-        printf("\n");
         if(win_or_loss == 'w'){
             if(player_scoretotal == 21 && (getCardNum(player_owncard[0]) == 1 && getCardNum(player_owncard[1]) >=10) || (getCardNum(player_owncard[0]) >=10 && getCardNum(player_owncard[1]) == 1)){
-                printf("プレイヤーがブラックジャックになりました\n");
+                printf("\n最初の手札でプレイヤーがブラックジャックになりました\n");
             }
+        }
+        printf("-------------------------\n");
+        if(win_or_loss == 'w'){
             printf("プレイヤーの勝ち\n");
         }else if(win_or_loss == 'l'){
             printf("プレイヤーの負け\n");
         }else if(win_or_loss == 'd'){
             printf("引き分け\n");
         }
-        printf("\n");
+        printf("-------------------------\n");
         
         //倍率の計算
         switch (win_or_loss) {
@@ -407,21 +420,25 @@ int main(void){
                 printf("%d,",getCardNum(dealer_owncard[k]));
             }
         }
-        printf("\n");
         printf(" 合計: %d\n",dealer_scoretotal);
-        printf("\nあなたは$%dをベットしました。\n",betamount);
+        printf("-------------------------\n");
+        printf("\t-RESULT-\nあなたは$%dをベットしました。\n",betamount);
         printf("倍率: %.1f\n",return_amount_magnifi);
         if(win_or_loss == 'w'){
             printf("配当額: + $%d\n",return_amount);
             printf("所持金:  $%d\n",player_money + return_amount);
+            stat_t.returnamountTtl += return_amount;
+            stat_t.winsTtl += 1;
         }else if(win_or_loss == 'l'){
             printf("損失額: -$%d\n",betamount);
             printf("所持金:  $%d\n",player_money);
+            stat_t.losingamountTtl += betamount;
+            stat_t.lossTtl += 1;
         }else if(win_or_loss == 'd'){
             printf("配当額: +$0\n");
             printf("所持金:  $%d\n",player_money + return_amount);
-            stat_t.losingamountTtl += betamount;
         }
+        printf("-------------------------\n");
         player_money += return_amount;
         usleep(2000000);
 
@@ -431,11 +448,15 @@ int main(void){
         printf("\nゲームを終了しますか？ (1:はい 0:いいえ) > ");
         scanf("%d",&num_selection);
         if(num_selection == 1){
-            printf("/n");
-            printf("------統計------\n");
-            printf("所持金：%d\n",player_money);
-            printf("賭けた額：%d\n",stat_t.betTtl);
-            printf("負けた額：%d\n",stat_t.losingamountTtl);
+            printf("\n");
+            printf("------------統計------------\n");
+            printf("所持金：$%d\n",player_money);
+            printf("賭けた総額：$%d\n",stat_t.betTtl);
+            printf("勝った総額：$%d\n",stat_t.returnamountTtl);
+            printf("負けた総額：$%d\n",stat_t.losingamountTtl);
+            printf("勝った総数：%d回\n",stat_t.winsTtl);
+            printf("負けた総数：%d回\n",stat_t.lossTtl);
+            printf("----------------------------\n");
             exit(0);
         }
         system("clear");

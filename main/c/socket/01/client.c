@@ -2,6 +2,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -40,7 +41,16 @@ int main(void) {
     }
     printf("received: %s\n", buffer);
 
-    send(sock_id, "randam", strlen("randam" + 1, 0));
+    send(sock_id, "randam", strlen("randam") + 1, 0);
+
+    recv_size = recv(sock_id, buffer, sizeof(buffer), 0);
+    if (recv_size == 0 || recv_size == -1) {
+        close(sock_id);
+        printf("recv error\n");
+        return 0;
+    }
+    int rand_num = (int)strtol(buffer, NULL, 10);
+    printf("received: %d\n", rand_num);
 
     close(sock_id);
 

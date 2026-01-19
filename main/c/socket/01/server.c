@@ -1,6 +1,8 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -8,7 +10,7 @@
 #include <math.h>
 #include <time.h>
 
-int RNG(int max, int min){
+int RNG(int min, int max){
     return rand() % (max - min + 1) + min;
 }
 
@@ -63,8 +65,12 @@ int main(void) {
             break;
         }
         printf("received: %s\n", buffer);
-        send(recv_sock, RNG(0, 100),
 
+        int rand_num = RNG(0, 99);
+        snprintf(buffer, sizeof(buffer), "%d", rand_num);
+        send(recv_sock, buffer, strlen(buffer) + 1, 0);
+        printf("send randam num: %s\n", buffer);
+        //printf("rand_num: '%d\n'", rand_num);
         close(recv_sock);
     }
     return 0;

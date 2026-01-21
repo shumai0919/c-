@@ -20,6 +20,7 @@ int main(void) {
     char hostname[256];
     char buffer[256];
     int sock_id, send_size, recv_sock_1,recv_sock_2, recv_size;
+    int player_num_buffer;
     srand((unsigned int)time(NULL));
     sock_id = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_id == -1) {
@@ -55,14 +56,14 @@ int main(void) {
             break;
         }
         printf("received: %s\n", buffer);
-
-        send_size = send(recv_sock_1, "you are player1", strlen("you are player1") + 1, 0);
+        send_size = send(recv_sock_1, "you are player1", strlen("you are player1") + 1, 0);//send message sock1
         if (send_size == 0 || send_size == -1) {
             close(recv_sock_1);
             printf("send error");
             break;
         }
-        send_size = send(recv_sock_1, "1", strlen("!") + 1, 0);
+        player_num_buffer = 0;
+        send_size = send(recv_sock_1, &player_num_buffer, sizeof(player_num_buffer), 0);// send player num sock1
         if (send_size == 0 || send_size == -1) {
             close(recv_sock_1);
             printf("send error");
@@ -81,40 +82,86 @@ int main(void) {
             printf("recv error\n");
             break;
         }
-        send_size = send(recv_sock_2, "you are player2", strlen("you are player2") + 1, 0);
+        printf("received: %s\n", buffer);
+
+        send_size = send(recv_sock_2, "you are player2", strlen("you are player2") + 1, 0);// send message sock2
         if (send_size == 0 || send_size == -1) {
-            close(recv_sock_1);
+            close(recv_sock_2);
             printf("send error");
             break;
         }
-        send_size = send(recv_sock_2, "2", strlen("2") + 1, 0);
+        player_num_buffer = 1;
+        send_size = send(recv_sock_2, &player_num_buffer, sizeof(player_num_buffer), 0);// send player num sock2
         if (send_size == 0 || send_size == -1) {
-            close(recv_sock_1);
+            close(recv_sock_2);
             printf("send error");
             break;
         }
 
-        int win = 0, player_turn = 1, total_turns = 0;
-        int board[9] = {0};
+        int win = 0, player_turn = 0, total_turns = 0, select_board;
+        int board[9];
+        for (int i = 0; i < 9; i++) {
+            board[i] = -1;
+        }
+        char sock_turn[256];
 
         while (1) {
-            send(recv_sock_1, &player_turn, sizeof(player_turn), 0);
+            send_size = send(recv_sock_1, &player_turn, sizeof(player_turn), 0);// send turn sock1
             if (send_size == 0 || send_size == -1) {
                 close(recv_sock_1);
                 printf("send error");
                 break;
             }
-            send(recv_sock_2, &player_turn, sizeof(player_turn), 0);
+            send_size = send(recv_sock_2, &player_turn, sizeof(player_turn), 0);// send turn sock2
+            if (send_size == 0 || send_size == -1) {
+                close(recv_sock_2);
+                printf("send error");
+                break;
+            }
+
+            if (player_turn == 0) {
+                recv_size = recv(recv_sock_1, &select_board, sizeof(select_board), 0);// recv client board select sock1
+                if (send_size == 0 || send_size == -1) {
+                    close(recv_sock_1);
+                    printf("recv error");
+                    break;
+                }
+            } else {
+                recv_size = recv(recv_sock_2, &select_board, sizeof(select_board), 0);// recv client board select sock2
+                if (send_size == 0 || send_size == -1) {
+                    close(recv_sock_2);
+                    printf("recv error");
+                    break;
+                }
+
+            }
+
+            //入力エラーチェック
+
+            if (player_turn == 0) {
+                board[select_board - 1] = 0;
+                player_turn = 1;
+            } else {
+                board[select_board - 1] = 1;
+                player_turn = 0;
+            }
+            send_size = send(recv_sock_1, board, sizeof(board), 0);// send new board sock2
             if (send_size == 0 || send_size == -1) {
                 close(recv_sock_1);
                 printf("send error");
                 break;
             }
-
-            if (turn == 1){
-
+            send_size = send(recv_sock_2, board, sizeof(board), 0);
+            if (send_size == 0 || send_size == -1) {
+                close(recv_sock_2);
+                printf("send error");
+                break;
             }
-
+            if (player_turn == 0) {
+                player_turn = 0;
+            } else {
+                player_turn = 1;
+            }
         }
 
         close(recv_sock_1);

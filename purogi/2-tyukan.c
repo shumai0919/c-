@@ -28,46 +28,61 @@ struct results pathType[23] = {
     {"研究者", "鋭い観察力と飽くなき探求心で才能を発揮する。"},
     {"指揮者", "人を指揮して導く力がある。"},
     {"哲学者", "物事の根本を見抜く優れた力がある。"},
-    {"", ""},
+    {"", "", "", ""},
     {"メッセンジャー", "人に気づきを与える。問題を天性の才能で見抜くことができる。"},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
     {"政治家・建築家", "パワフルな実行力と設計力を持っている。大局的にものを見るセンスがある。"}
 };
 
 struct results lifePeak[23] = {
     {"", "", "", ""},
-    {"", "始まり", "トップの座につく", "トップの座に押し上げる"},
-    {"", "ゆったり", "おだやか", "ご縁による豊かさ"},
-    {"", "軽快", "楽天的な生き方", "好奇心と創造性"},
-    {"", "こつこつ", "生産的なパワー", "努力に対する褒美"},
-    {"", "自由", "自由でエキサイティングな変化", "人生に再挑戦"},
-    {"", "愛と契約に守られる", "絆と制約", "人のために尽くす余裕"},
-    {"", "深い思索", "強力な探求心", "魂の進化"},
-    {"", "パワフルな空気", "目的達成力", "夢や目的を達成"},
-    {"", "恩恵に満ちている", "成熟と完成", "これまでの学びを統合する"},
-    {"", ""},
-    {"", "神聖なパワー", "感受性", "あらゆるチャンスをつかむ"},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", ""},
-    {"", "生産性に満ちている", "壮大な計画が形に", "自分にかかわるあらゆる人に実りをもたらす"}
+    {"1", "始まり", "トップの座につく", "トップの座に押し上げる"},
+    {"2", "ゆったり", "おだやか", "ご縁による豊かさ"},
+    {"3", "軽快", "楽天的な生き方", "好奇心と創造性"},
+    {"4", "こつこつ", "生産的なパワー", "努力に対する褒美"},
+    {"5", "自由", "自由でエキサイティングな変化", "人生に再挑戦"},
+    {"6", "愛と契約に守られる", "絆と制約", "人のために尽くす余裕"},
+    {"7", "深い思索", "強力な探求心", "魂の進化"},
+    {"8", "パワフルな空気", "目的達成力", "夢や目的を達成"},
+    {"9", "恩恵に満ちている", "成熟と完成", "これまでの学びを統合する"},
+    {"", "", "", ""},
+    {"11", "神聖なパワー", "感受性", "あらゆるチャンスをつかむ"},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"", "", "", ""},
+    {"22", "生産性に満ちている", "壮大な計画が形に", "自分にかかわるあらゆる人に実りをもたらす"}
 };
+
+void digit_sum(int *num) {
+    if (*num == 11 || *num == 22) return;
+    int check = 0;
+    while (check == 0) {
+        check = 1;
+        int temp = *num;
+        *num = 0;
+        while (temp > 0) {
+            *num += temp % 10;
+            temp /= 10;
+        }
+        if (*num >= 10) check = 0;
+    }
+}
 
 int main(void) {
     struct lifeNum data = {
@@ -96,44 +111,39 @@ int main(void) {
             i++;
         }
     }
-    printf("%d\n", data.birth); // a
     i = 7;
     temp = data.birth;
     while (temp > 0) {
         data.bNumbers[i] = temp % 10;
+        if (i < 4) {
+            data.pinna2 += data.bNumbers[i];
+        }
+        if (i > 3 && i < 6) {
+            data.pinna1 += data.bNumbers[i];
+        }
+        if (i > 5 && i < 8) {
+            data.pinna1 += data.bNumbers[i];
+            data.pinna2 += data.bNumbers[i];
+        }
         temp /= 10;
         i--;
     }
-    for (i = 0; i < 8; i++) printf("%d ", data.bNumbers[i]); // a
-    printf("\n");
 
-    int year = data.birth / 10000;
-    int month = data.bNumbers[6] * 10 + data.bNumbers[7];
-    int date = data.bNumbers[4] * 10 + data.bNumbers[5];
-    printf("y%d m%d d%d\n", year, month, date); // a
+    digit_sum(&data.pinna1);
+    digit_sum(&data.pinna2);
+    data.pinna3 = data.pinna1 + data.pinna2;
+    digit_sum(&data.pinna3);
 
     for (i = 0; i < 8; i++) data.lifePath += data.bNumbers[i];
-    data.pinna1 = month + date;
-    data.pinna2 = year + date;
-    data.pinna3 = data.pinna1 + data.pinna2;
-    if (data.lifePath == 11 || data.lifePath == 22) {
-        data.pinna1 = data.pinna2 = data.pinna3 = data.lifePath;
-    }
+    digit_sum(&data.lifePath);
     data.peak1 = 36 - data.lifePath;
 
     printf("あなたのライフパスナンバーは、%d で、%sタイプです！\n", data.lifePath, pathType[data.lifePath].type);
-    printf("あなたは、%s\n", lifePeak[data.lifePath].text1);
+    printf("あなたは、%s\n", pathType[data.lifePath].text1);
     printf("人生の山場１：0～%d 歳、人生の山場２：%d 歳～%d 歳、人生の山場３：%d 歳～%d 歳\n",
         data.peak1, data.peak1, data.peak1 + 9, data.peak1 + 9, data.peak1 + 18);
     printf("人生の山場１キーワード：%s、人生の山場２キーワード：%s、人生の山場３キーワード：%s\n",
-        lifePeak[data.pinna1], &lifePeak[data.pinna2], lifePeak[data.pinna3]);
+        lifePeak[data.pinna1].text1, lifePeak[data.pinna2].text2, lifePeak[data.pinna3].text3);
 
-/*
-あなたのライフパスナンバーは、9 で、哲学者タイプです！
-あなたは、物事の根本を見抜く優れた力がある。
-人生の山場１：0～27 歳、人生の山場２：27 歳～36 歳、人生の山場３：36 歳～45 歳
-人生の山場１キーワード：始まり、人生の山場２キーワード：目的達成力、人生の山場
-３キーワード：これまでの学びを統合する
-*/    
-
+    return 0;
 }
